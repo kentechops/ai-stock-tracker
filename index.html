@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .stock-table th,
+        .stock-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .stock-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .stock-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .refresh-button:hover {
+            background-color: #0056b3;
+        }
+
+        .debug-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .debug-header h2 {
+            color: #333;
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .debug-toggle {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.5em;
+            padding: 0 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .debug-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .debug-content {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease-out;
+            margin-top: 10px;
+        }
+
+        .debug-content.collapsed {
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Toggle switch styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2196F3;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            font-size: 1em;
+            color: #333;
+        }
+
+        /* Add stock form styles */
+        .add-stock-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .stock-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 120px;
+            text-transform: uppercase;
+        }
+
+        .add-stock-button {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .add-stock-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Price Tracker</h1>
+        <div class="toggle-container">
+            <div class="add-stock-container">
+                <input type="text" id="newStockSymbol" class="stock-input" placeholder="Stock Symbol" maxlength="5">
+                <button class="add-stock-button" onclick="addNewStock()">Add Stock</button>
+            </div>
+            <span class="toggle-label">Test Mode:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="testModeToggle" checked onchange="fetchStockData()">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <button class="refresh-button" onclick="fetchStockData()">Refresh Prices</button>
+        <div id="loading" class="loading">Loading stock data...</div>
+        <table class="stock-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Change</th>
+                    <th>Change %</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody">
+            </tbody>
+        </table>
+
+        <div class="debug-section">
+            <div class="debug-header" onclick="toggleDebug()">
+                <h2>Debug Information</h2>
+                <button class="debug-toggle collapsed" id="debugToggle">▼</button>
+            </div>
+            <div id="debugContent" class="debug-content collapsed"></div>
+        </div>
+    </div>
+
+    <script>
+        const companies = [
+            { name: 'Apple Inc.', symbol: 'AAPL' },
+            { name: 'Microsoft Corporation', symbol: 'MSFT' },
+            { name: 'Google', symbol: 'GOOGL' },
+            { name: 'Amazon', symbol: 'AMZN' },
+            { name: 'Meta Platforms', symbol: 'META' }
+        ];
+
+        const testData = [
+            {
+                "Global Quote": {
+                    "01. symbol": "META",
+                    "02. open": "629.9000",
+                    "03. high": "633.3300",
+                    "04. low": "609.3500",
+                    "05. price": "619.5600",
+                    "06. volume": "15694253",
+                    "07. latest trading day": "2025-03-12",
+                    "08. previous close": "605.7100",
+                    "09. change": "13.8500",
+                    "10. change percent": "2.2866%"
+                }
+            },
+            {
+                "Global Quote": {
+                    "01. symbol": "AMZN",
+                    "02. open": "200.7200",
+                    "03. high": "201.5200",
+                    "04. low": "195.2900",
+                    "05. price": "198.8900",
+                    "06. volume": "41933775",
+                    "07. latest trading day": "2025-03-12",
+                    "08. previous close": "196.5900",
+                    "09. change": "2.3000",
+                    "10. change percent": "1.1699%"
+                }
+            },
+            {
+                "Global Quote": {
+                    "01. symbol": "GOOGL",
+                    "02. open": "166.5800",
+                    "03. high": "167.6399",
+                    "04. low": "163.5300",
+                    "05. price": "167.1100",
+                    "06. volume": "27548169",
+                    "07. latest trading day": "2025-03-12",
+                    "08. previous close": "164.0400",
+                    "09. change": "3.0700",
+                    "10. change percent": "1.8715%"
+                }
+            },
+            {
+                "Global Quote": {
+                    "01. symbol": "MSFT",
+                    "02. open": "382.9500",
+                    "03. high": "385.2165",
+                    "04. low": "378.9507",
+                    "05. price": "383.2700",
+                    "06. volume": "23780157",
+                    "07. latest trading day": "2025-03-12",
+                    "08. previous close": "380.4500",
+                    "09. change": "2.8200",
+                    "10. change percent": "0.7412%"
+                }
+            },
+            {
+                "Global Quote": {
+                    "01. symbol": "AAPL",
+                    "02. open": "220.1400",
+                    "03. high": "221.7500",
+                    "04. low": "214.9100",
+                    "05. price": "216.9800",
+                    "06. volume": "62235655",
+                    "07. latest trading day": "2025-03-12",
+                    "08. previous close": "220.8400",
+                    "09. change": "-3.8600",
+                    "10. change percent": "-1.7479%"
+                }
+            }
+        ];
+
+        function toggleDebug() {
+            const debugContent = document.getElementById('debugContent');
+            const debugToggle = document.getElementById('debugToggle');
+            debugContent.classList.toggle('collapsed');
+            debugToggle.classList.toggle('collapsed');
+        }
+
+        function logDebug(message, type = 'info') {
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            
+            // Obfuscate API key in the message
+            const obfuscatedMessage = message.replace(/apikey=[A-Z0-9]+/, 'apikey=********');
+            logEntry.textContent = `[${timestamp}] ${obfuscatedMessage}`;
+            debugContent.insertBefore(logEntry, debugContent.firstChild);
+        }
+
+        async function fetchStockData() {
+            const loading = document.getElementById('loading');
+            const tableBody = document.getElementById('stockTableBody');
+            const isTestMode = document.getElementById('testModeToggle').checked;
+            
+            loading.style.display = 'block';
+            tableBody.innerHTML = '';
+            logDebug(`Starting to fetch stock data in ${isTestMode ? 'test' : 'live'} mode...`, 'info');
+
+            try {
+                if (isTestMode) {
+                    // Use test data
+                    logDebug('Using test data...', 'info');
+                    for (const data of testData) {
+                        const quote = data['Global Quote'];
+                        const company = companies.find(c => c.symbol === quote['01. symbol']);
+                        
+                        if (!company) continue;
+
+                        const price = parseFloat(quote['05. price']).toFixed(2);
+                        const change = parseFloat(quote['09. change']).toFixed(2);
+                        const changePercent = quote['10. change percent'];
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${company.name}</td>
+                            <td>${company.symbol}</td>
+                            <td>$${price}</td>
+                            <td class="${change >= 0 ? 'positive' : 'negative'}">$${change}</td>
+                            <td class="${change >= 0 ? 'positive' : 'negative'}">${changePercent}</td>
+                        `;
+                        tableBody.appendChild(row);
+                        logDebug(`Successfully processed test data for ${company.symbol}`, 'success');
+                    }
+                } else {
+                    // Use live API
+                    for (const company of companies) {
+                        logDebug(`Fetching data for ${company.symbol}...`, 'info');
+                        const apiKey = 'MY246QO6WLKGJGAB';
+                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${company.symbol}&apikey=${apiKey}`;
+                        logDebug(`API URL: ${url.replace(apiKey, '********')}`, 'info');
+
+                        const response = await fetch(url);
+                        logDebug(`Response status for ${company.symbol}: ${response.status}`, 'info');
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        const obfuscatedData = JSON.stringify(data, null, 2).replace(apiKey, '********');
+                        logDebug(`Raw response for ${company.symbol}: ${obfuscatedData}`, 'info');
+
+                        if (data['Error Message']) {
+                            throw new Error(`API Error: ${data['Error Message']}`);
+                        }
+
+                        if (data['Note']) {
+                            logDebug(`API Note for ${company.symbol}: ${data['Note']}`, 'warning');
+                        }
+
+                        const quote = data['Global Quote'];
+                        if (!quote) {
+                            throw new Error(`No quote data available for ${company.symbol}`);
+                        }
+
+                        const price = parseFloat(quote['05. price']).toFixed(2);
+                        const change = parseFloat(quote['09. change']).toFixed(2);
+                        const changePercent = quote['10. change percent'];
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${company.name}</td>
+                            <td>${company.symbol}</td>
+                            <td>$${price}</td>
+                            <td class="${change >= 0 ? 'positive' : 'negative'}">$${change}</td>
+                            <td class="${change >= 0 ? 'positive' : 'negative'}">${changePercent}</td>
+                        `;
+                        tableBody.appendChild(row);
+                        logDebug(`Successfully processed ${company.symbol}`, 'success');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching stock data:', error);
+                logDebug(`Error: ${error.message}`, 'error');
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Error loading stock data. Please try again later.</td></tr>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function generateRandomStockData(symbol) {
+            const price = (Math.random() * 1000).toFixed(2);
+            const change = (Math.random() * 20 - 10).toFixed(2);
+            const changePercent = ((change / price) * 100).toFixed(4) + '%';
+            
+            return {
+                "Global Quote": {
+                    "01. symbol": symbol,
+                    "05. price": price,
+                    "09. change": change,
+                    "10. change percent": changePercent
+                }
+            };
+        }
+
+        async function addNewStock() {
+            const symbolInput = document.getElementById('newStockSymbol');
+            const symbol = symbolInput.value.trim().toUpperCase();
+            
+            if (!symbol) {
+                logDebug('Please enter a stock symbol', 'error');
+                return;
+            }
+
+            const isTestMode = document.getElementById('testModeToggle').checked;
+            const tableBody = document.getElementById('stockTableBody');
+            
+            try {
+                let stockData;
+                
+                if (isTestMode) {
+                    logDebug(`Generating test data for ${symbol}...`, 'info');
+                    stockData = generateRandomStockData(symbol);
+                    const quote = stockData['Global Quote'];
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${symbol}</td>
+                        <td>${symbol}</td>
+                        <td>$${quote['05. price']}</td>
+                        <td class="${parseFloat(quote['09. change']) >= 0 ? 'positive' : 'negative'}">$${quote['09. change']}</td>
+                        <td class="${parseFloat(quote['09. change']) >= 0 ? 'positive' : 'negative'}">${quote['10. change percent']}</td>
+                    `;
+                    tableBody.appendChild(row);
+                    logDebug(`Successfully added test data for ${symbol}`, 'success');
+                } else {
+                    logDebug(`Fetching data for ${symbol}...`, 'info');
+                    const apiKey = 'MY246QO6WLKGJGAB';
+                    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+                    logDebug(`API URL: ${url.replace(apiKey, '********')}`, 'info');
+
+                    const response = await fetch(url);
+                    logDebug(`Response status for ${symbol}: ${response.status}`, 'info');
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const obfuscatedData = JSON.stringify(data, null, 2).replace(apiKey, '********');
+                    logDebug(`Raw response for ${symbol}: ${obfuscatedData}`, 'info');
+
+                    if (data['Error Message']) {
+                        throw new Error(`API Error: ${data['Error Message']}`);
+                    }
+
+                    if (data['Note']) {
+                        logDebug(`API Note for ${symbol}: ${data['Note']}`, 'warning');
+                    }
+
+                    const quote = data['Global Quote'];
+                    if (!quote) {
+                        throw new Error(`No quote data available for ${symbol}`);
+                    }
+
+                    const price = parseFloat(quote['05. price']).toFixed(2);
+                    const change = parseFloat(quote['09. change']).toFixed(2);
+                    const changePercent = quote['10. change percent'];
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${symbol}</td>
+                        <td>${symbol}</td>
+                        <td>$${price}</td>
+                        <td class="${change >= 0 ? 'positive' : 'negative'}">$${change}</td>
+                        <td class="${change >= 0 ? 'positive' : 'negative'}">${changePercent}</td>
+                    `;
+                    tableBody.appendChild(row);
+                    logDebug(`Successfully added ${symbol}`, 'success');
+                }
+                
+                // Clear the input field after successful addition
+                symbolInput.value = '';
+                
+            } catch (error) {
+                console.error('Error adding stock:', error);
+                logDebug(`Error adding ${symbol}: ${error.message}`, 'error');
+            }
+        }
+
+        // Add keyboard event listener for the input field
+        document.getElementById('newStockSymbol').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addNewStock();
+            }
+        });
+
+        // Initial load
+        fetchStockData();
+    </script>
+</body>
+</html> 
