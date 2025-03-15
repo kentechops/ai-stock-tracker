@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Tracker</title>
+    <!-- Load configuration -->
+    <script type="module" src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -26,10 +28,16 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         h1 {
             color: #333;
-            margin-bottom: 20px;
-            text-align: center;
+            margin: 0;
         }
 
         .stock-table {
@@ -147,8 +155,6 @@
         .toggle-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 10px 0;
             gap: 10px;
         }
 
@@ -206,9 +212,63 @@
         .add-stock-container {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            margin: 10px 0;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 200px;
+        }
+
+        .search-button {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #5a6268;
+        }
+
+        .search-results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
+        .search-results.visible {
+            display: block;
+        }
+
+        .search-results h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .search-results-content {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #444;
+            white-space: pre-wrap;
         }
 
         .stock-input {
@@ -234,21 +294,46 @@
         .add-stock-button:hover {
             background-color: #218838;
         }
+
+        .stock-symbol-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 8px;
+            margin: 0 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+        
+        .stock-symbol-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Stock Price Tracker</h1>
-        <div class="toggle-container">
-            <div class="add-stock-container">
-                <input type="text" id="newStockSymbol" class="stock-input" placeholder="Stock Symbol" maxlength="5">
-                <button class="add-stock-button" onclick="addNewStock()">Add Stock</button>
+        <div class="header-container">
+            <h1>Stock Price Tracker</h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="documentation.html" style="color: #007bff; text-decoration: none;">Documentation</a>
+                <div class="toggle-container">
+                    <span class="toggle-label" id="modeLabel">Test Mode</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="testModeToggle" checked onchange="handleModeToggle()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
-            <span class="toggle-label">Test Mode:</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="testModeToggle" checked onchange="fetchStockData()">
-                <span class="toggle-slider"></span>
-            </label>
+        </div>
+        <div class="add-stock-container">
+            <input type="text" id="newStockSymbol" class="stock-input" placeholder="Stock Symbol" maxlength="5">
+            <button class="add-stock-button" onclick="addNewStock()">Add Stock</button>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Enter search query">
+                <button class="search-button" onclick="performSearch()">Search</button>
+            </div>
         </div>
         <button class="refresh-button" onclick="fetchStockData()">Refresh Prices</button>
         <div id="loading" class="loading">Loading stock data...</div>
@@ -265,6 +350,11 @@
             <tbody id="stockTableBody">
             </tbody>
         </table>
+
+        <div id="searchResults" class="search-results">
+            <h2>Search Results</h2>
+            <div id="searchResultsContent" class="search-results-content"></div>
+        </div>
 
         <div class="debug-section">
             <div class="debug-header" onclick="toggleDebug()">
@@ -283,6 +373,50 @@
             { name: 'Amazon', symbol: 'AMZN' },
             { name: 'Meta Platforms', symbol: 'META' }
         ];
+
+        // Flag to control whether to use fake Perplexity API data
+        const use_fake_pp = true;
+
+        // Fake Perplexity API response data
+        const fake_perplexity_data = {
+            "id": "67b68c7a-b24f-41c5-961e-925d53725195",
+            "model": "sonar-pro",
+            "created": 1741842253,
+            "usage": {
+                "prompt_tokens": 81,
+                "completion_tokens": 162,
+                "total_tokens": 243,
+                "citation_tokens": 7044,
+                "num_search_queries": 1
+            },
+            "citations": [
+                "https://builtin.com/articles/rideshare-companies",
+                "https://en.wikipedia.org/wiki/Ridesharing_company",
+                "https://www.rideshare.com",
+                "https://apps.apple.com/us/app/obi-get-the-cheapest-ride/id1081008679",
+                "https://www.statista.com/topics/4610/ridesharing-services-in-the-us/",
+                "https://www.lyft.com",
+                "https://wesavelives.org/ride-sharing-is-it-worth-it/",
+                "https://ridewithvia.com",
+                "https://www.uber.com",
+                "https://www.uber.com/us/en/ride/"
+            ],
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "finish_reason": "stop",
+                    "message": {
+                        "role": "assistant",
+                        "content": "I don't have enough information to recommend specific company stocks related to sneakers. However, some major publicly traded companies involved in the sneaker and athletic footwear industry include:\n\n- Nike (NKE)\n- Adidas (ADDYY) \n- Under Armour (UAA)\n- Skechers (SKX)\n- Foot Locker (FL)\n\nThese are some of the largest sneaker and athletic footwear companies traded on major U.S. stock exchanges. Without more specific criteria, I can't make a recommendation, but these are some of the key players in the sneaker industry to consider researching further."
+                    },
+                    "delta": {
+                        "role": "assistant",
+                        "content": ""
+                    }
+                }
+            ]
+        };
 
         const testData = [
             {
@@ -485,6 +619,7 @@
         async function addNewStock() {
             const symbolInput = document.getElementById('newStockSymbol');
             const symbol = symbolInput.value.trim().toUpperCase();
+            const companyName = symbolInput.dataset.companyName || symbol; // Use symbol as fallback
             
             if (!symbol) {
                 logDebug('Please enter a stock symbol', 'error');
@@ -504,7 +639,7 @@
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${symbol}</td>
+                        <td>${companyName}</td>
                         <td>${symbol}</td>
                         <td>$${quote['05. price']}</td>
                         <td class="${parseFloat(quote['09. change']) >= 0 ? 'positive' : 'negative'}">$${quote['09. change']}</td>
@@ -548,7 +683,7 @@
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${symbol}</td>
+                        <td>${companyName}</td>
                         <td>${symbol}</td>
                         <td>$${price}</td>
                         <td class="${change >= 0 ? 'positive' : 'negative'}">$${change}</td>
@@ -558,8 +693,9 @@
                     logDebug(`Successfully added ${symbol}`, 'success');
                 }
                 
-                // Clear the input field after successful addition
+                // Clear the input field and stored company name after successful addition
                 symbolInput.value = '';
+                delete symbolInput.dataset.companyName;
                 
             } catch (error) {
                 console.error('Error adding stock:', error);
@@ -575,8 +711,129 @@
             }
         });
 
+        async function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                logDebug('Please enter a search query', 'error');
+                return;
+            }
+
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsContent = document.getElementById('searchResultsContent');
+            
+            try {
+                logDebug(`Performing search for query: ${query}`, 'info');
+                searchResultsContent.textContent = 'Searching...';
+                searchResults.classList.add('visible');
+
+                let data;
+                if (use_fake_pp) {
+                    // Use fake data
+                    logDebug('Using fake Perplexity API data', 'info');
+                    data = fake_perplexity_data;
+                } else {
+                    // Make real API call
+                    const apiKey = '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';
+                    const url = 'https://api.perplexity.ai/chat/completions';
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'sonar-pro',
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: query
+                                }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+
+                    data = await response.json();
+                }
+
+                logDebug('Received response from Perplexity API', 'success');
+                // Log the complete API response
+                logDebug(`Perplexity API Response: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                // Extract the content from the API response
+                const content = data.choices?.[0]?.message?.content;
+                if (!content) {
+                    throw new Error('No content in API response');
+                }
+
+                // Process and display the results with clickable buttons for stock symbols
+                searchResultsContent.innerHTML = content.split('\n').map(line => {
+                    if (!line.trim()) return '';
+                    
+                    // Look for stock symbols in parentheses
+                    return line.replace(/\(([A-Z]+)\)/g, (match, symbol) => {
+                        return `<button class="stock-symbol-button" onclick="addSymbolFromSearch('${symbol}')">${symbol}</button>`;
+                    });
+                }).join('<br>');
+
+                logDebug('Search completed successfully', 'success');
+            } catch (error) {
+                console.error('Error performing search:', error);
+                logDebug(`Error: ${error.message}`, 'error');
+                searchResultsContent.textContent = 'Error performing search. Please try again.';
+            }
+        }
+
+        function addSymbolFromSearch(symbol) {
+            // Get the line of text containing the company name
+            const button = event.target;
+            const line = button.parentElement.textContent;
+            // Extract company name (everything before the button)
+            let companyName = line.split(symbol)[0].trim();
+            // Remove everything before and including a number followed by a dot
+            // companyName = companyName.substring(companyName.lastIndexOf('.') + 1).trim();
+            companyName = companyName.split(/\d+\./).pop().trim();
+            companyName = companyName.split(/- /).pop().trim();
+            console.log(companyName);
+
+            // Populate the stock symbol input
+            const symbolInput = document.getElementById('newStockSymbol');
+            symbolInput.value = symbol;
+            
+            // Store the company name temporarily
+            symbolInput.dataset.companyName = companyName;
+            
+            // Trigger the add stock function
+            addNewStock();
+        }
+
+        // Add keyboard event listener for the search input field
+        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch();
+            }
+        });
+
+        async function handleModeToggle() {
+            // Update the mode label
+            const modeLabel = document.getElementById('modeLabel');
+            const isTestMode = document.getElementById('testModeToggle').checked;
+            modeLabel.textContent = isTestMode ? 'Test Mode' : 'Live Mode';
+            
+            // Fetch new data with the updated mode
+            await fetchStockData();
+        }
+
         // Initial load
-        fetchStockData();
+        handleModeToggle();
     </script>
 </body>
 </html> 

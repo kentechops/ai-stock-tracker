@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker API Configuration Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #e83e8c;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid #eee;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .note {
+            background-color: #e7f5ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Tracker API Configuration Guide</h1>
+
+        <h2>Configuration Setup</h2>
+        <p>The Stock Tracker application uses a configuration file to manage API keys and other settings. This guide will help you set up the configuration properly.</p>
+
+        <h3>Initial Setup</h3>
+        <ol>
+            <li>Locate the <code>config.template.js</code> file in your project directory</li>
+            <li>Create a copy of this file and name it <code>config.js</code></li>
+            <li>Update the values in <code>config.js</code> with your actual configuration</li>
+        </ol>
+
+        <div class="warning">
+            <strong>Important:</strong> Never commit your <code>config.js</code> file to version control as it contains sensitive information.
+            The <code>config.js</code> file is already added to <code>.gitignore</code>.
+        </div>
+
+        <h3>Configuration Structure</h3>
+        <p>The configuration file contains the following settings:</p>
+        <pre>
+const config = {
+    // API Keys
+    STOCK_API_KEY: 'your_api_key_here',
+    
+    // API Endpoints
+    API_BASE_URL: 'https://api.example.com',
+    
+    // Other Configuration
+    UPDATE_INTERVAL: 60000, // Update interval in milliseconds
+    MAX_STOCKS: 10,        // Maximum number of stocks to track
+    
+    // Feature Flags
+    ENABLE_DEBUG: false,
+    ENABLE_REAL_TIME: true
+};</pre>
+
+        <h3>Configuration Options</h3>
+        <h4>API Keys</h4>
+        <ul>
+            <li><code>STOCK_API_KEY</code>: Your Alpha Vantage API key for accessing stock data</li>
+        </ul>
+
+        <h4>API Endpoints</h4>
+        <ul>
+            <li><code>API_BASE_URL</code>: The base URL for API requests</li>
+        </ul>
+
+        <h4>Other Configuration</h4>
+        <ul>
+            <li><code>UPDATE_INTERVAL</code>: How often to refresh stock data (in milliseconds)</li>
+            <li><code>MAX_STOCKS</code>: Maximum number of stocks that can be tracked simultaneously</li>
+        </ul>
+
+        <h4>Feature Flags</h4>
+        <ul>
+            <li><code>ENABLE_DEBUG</code>: Enable/disable debug logging</li>
+            <li><code>ENABLE_REAL_TIME</code>: Enable/disable real-time updates</li>
+        </ul>
+
+        <h3>Environment Variables</h3>
+        <p>The configuration supports environment variables as fallbacks. If an environment variable is set, it will take precedence over the values in the config file.</p>
+        <pre>
+// Environment variables take precedence
+STOCK_API_KEY: process.env.STOCK_API_KEY || 'your_api_key_here'</pre>
+
+        <div class="note">
+            <strong>Note:</strong> When deploying to production, it's recommended to use environment variables instead of hardcoding values in the config file.
+        </div>
+
+        <h3>Getting an API Key</h3>
+        <p>To use the Stock Tracker application, you'll need an Alpha Vantage API key:</p>
+        <ol>
+            <li>Visit <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a></li>
+            <li>Sign up for a free API key</li>
+            <li>Copy your API key and paste it into the <code>STOCK_API_KEY</code> field in your <code>config.js</code> file</li>
+        </ol>
+
+        <a href="documentation.html" class="back-link">← Back to Main Documentation</a>
+    </div>
+</body>
+</html> 
