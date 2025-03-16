@@ -1,0 +1,6 @@
+# Configuration files
+config.js
+.env
+
+# Keep template
+!config.template.js 

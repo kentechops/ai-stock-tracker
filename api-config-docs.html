@@ -113,29 +113,39 @@
         <pre>
 const config = {
     // API Keys
-    STOCK_API_KEY: 'your_api_key_here',
+    STOCK_API_KEY: 'your_alphavantage_api_key_here', // Get from https://www.alphavantage.co/support/#api-key
+    PERPLEXITY_API_KEY: 'your_perplexity_api_key_here', // Get from Perplexity AI
     
     // API Endpoints
-    API_BASE_URL: 'https://api.example.com',
+    API_BASE_URL: 'https://www.alphavantage.co', // Alpha Vantage API base URL
+    PERPLEXITY_API_URL: 'https://api.perplexity.ai/chat/completions', // Perplexity AI API endpoint
     
     // Other Configuration
-    UPDATE_INTERVAL: 60000, // Update interval in milliseconds
-    MAX_STOCKS: 10,        // Maximum number of stocks to track
+    UPDATE_INTERVAL: 60000, // Stock data refresh interval in milliseconds (1 minute)
+    MAX_STOCKS: 10,        // Maximum number of stocks that can be tracked
     
     // Feature Flags
-    ENABLE_DEBUG: false,
-    ENABLE_REAL_TIME: true
-};</pre>
+    ENABLE_DEBUG: false,   // Enable/disable debug logging
+    ENABLE_REAL_TIME: true, // Enable/disable real-time updates
+    USE_FAKE_PP: false     // Use fake Perplexity API data for testing
+};
+
+// Make config available globally
+window.config = config;
+
+export default config;</pre>
 
         <h3>Configuration Options</h3>
         <h4>API Keys</h4>
         <ul>
             <li><code>STOCK_API_KEY</code>: Your Alpha Vantage API key for accessing stock data</li>
+            <li><code>PERPLEXITY_API_KEY</code>: Your Perplexity AI API key for AI-powered company search</li>
         </ul>
 
         <h4>API Endpoints</h4>
         <ul>
-            <li><code>API_BASE_URL</code>: The base URL for API requests</li>
+            <li><code>API_BASE_URL</code>: The Alpha Vantage API base URL</li>
+            <li><code>PERPLEXITY_API_URL</code>: The Perplexity AI API endpoint for company search</li>
         </ul>
 
         <h4>Other Configuration</h4>
@@ -148,24 +158,37 @@ const config = {
         <ul>
             <li><code>ENABLE_DEBUG</code>: Enable/disable debug logging</li>
             <li><code>ENABLE_REAL_TIME</code>: Enable/disable real-time updates</li>
+            <li><code>USE_FAKE_PP</code>: Toggle between real and fake Perplexity API data for testing</li>
         </ul>
 
-        <h3>Environment Variables</h3>
-        <p>The configuration supports environment variables as fallbacks. If an environment variable is set, it will take precedence over the values in the config file.</p>
+        <h3>Browser Integration</h3>
+        <p>The configuration is made available globally through the window object. You can access the configuration values in your JavaScript code using either:</p>
         <pre>
-// Environment variables take precedence
-STOCK_API_KEY: process.env.STOCK_API_KEY || 'your_api_key_here'</pre>
+// Using bracket notation (recommended)
+window['config'].STOCK_API_KEY
+
+// Using dot notation
+window.config.STOCK_API_KEY</pre>
 
         <div class="note">
-            <strong>Note:</strong> When deploying to production, it's recommended to use environment variables instead of hardcoding values in the config file.
+            <strong>Note:</strong> Bracket notation is recommended for more reliable access to configuration values in the browser environment.
         </div>
 
-        <h3>Getting an API Key</h3>
-        <p>To use the Stock Tracker application, you'll need an Alpha Vantage API key:</p>
+        <h3>Getting API Keys</h3>
+        <p>To use the Stock Tracker application, you'll need two API keys:</p>
+        
+        <h4>1. Alpha Vantage API Key</h4>
         <ol>
             <li>Visit <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a></li>
             <li>Sign up for a free API key</li>
             <li>Copy your API key and paste it into the <code>STOCK_API_KEY</code> field in your <code>config.js</code> file</li>
+        </ol>
+
+        <h4>2. Perplexity AI API Key</h4>
+        <ol>
+            <li>Visit <a href="https://docs.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+            <li>Follow their documentation to obtain an API key</li>
+            <li>Copy your API key and paste it into the <code>PERPLEXITY_API_KEY</code> field in your <code>config.js</code> file</li>
         </ol>
 
         <a href="documentation.html" class="back-link">← Back to Main Documentation</a>

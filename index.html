@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Price Tracker</title>
     <!-- Load configuration -->
-    <script type="module" src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -365,6 +364,7 @@
         </div>
     </div>
 
+    <script type="module" src="config.js"></script>
     <script>
         const companies = [
             { name: 'Apple Inc.', symbol: 'AAPL' },
@@ -373,9 +373,6 @@
             { name: 'Amazon', symbol: 'AMZN' },
             { name: 'Meta Platforms', symbol: 'META' }
         ];
-
-        // Flag to control whether to use fake Perplexity API data
-        const use_fake_pp = true;
 
         // Fake Perplexity API response data
         const fake_perplexity_data = {
@@ -548,8 +545,8 @@
                     // Use live API
                     for (const company of companies) {
                         logDebug(`Fetching data for ${company.symbol}...`, 'info');
-                        const apiKey = 'MY246QO6WLKGJGAB';
-                        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${company.symbol}&apikey=${apiKey}`;
+                        const apiKey = window['config'].STOCK_API_KEY;
+                        const url = `${window['config'].API_BASE_URL}/query?function=GLOBAL_QUOTE&symbol=${company.symbol}&apikey=${apiKey}`;
                         logDebug(`API URL: ${url.replace(apiKey, '********')}`, 'info');
 
                         const response = await fetch(url);
@@ -649,8 +646,8 @@
                     logDebug(`Successfully added test data for ${symbol}`, 'success');
                 } else {
                     logDebug(`Fetching data for ${symbol}...`, 'info');
-                    const apiKey = 'MY246QO6WLKGJGAB';
-                    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+                    const apiKey = window['config'].STOCK_API_KEY;
+                    const url = `${window['config'].API_BASE_URL}/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
                     logDebug(`API URL: ${url.replace(apiKey, '********')}`, 'info');
 
                     const response = await fetch(url);
@@ -729,14 +726,14 @@
                 searchResults.classList.add('visible');
 
                 let data;
-                if (use_fake_pp) {
+                if (window['config'].USE_FAKE_PP) {
                     // Use fake data
                     logDebug('Using fake Perplexity API data', 'info');
                     data = fake_perplexity_data;
                 } else {
                     // Make real API call
-                    const apiKey = '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';
-                    const url = 'https://api.perplexity.ai/chat/completions';
+                    const apiKey = window['config'].PERPLEXITY_API_KEY;
+                    const url = window['config'].PERPLEXITY_API_URL;
                     
                     const response = await fetch(url, {
                         method: 'POST',
