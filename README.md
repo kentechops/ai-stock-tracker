@@ -3,6 +3,14 @@
 ## Project Overview
 The Stock Price Tracker is a web-based application that combines real-time stock data with AI-powered company search capabilities. It provides users with an intuitive interface to track stock prices and search for companies using natural language queries.
 
+## Application Screenshots
+
+### Company Search Interface
+![Company Search Interface](stock-tracker/images/Search.01.png)
+
+### Debug Information and Real-time Updates
+![Debug Information](stock-tracker/images/Debug.001.png)
+
 ## Key Features
 - Real-time stock price tracking
 - AI-powered company search
