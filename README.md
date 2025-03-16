@@ -76,7 +76,7 @@ Advanced development environment used for code generation and management:
 git clone https://github.com/kentechops/ai-stock-tracker.git
 ```
 
-2. Copy `config.template.js` to `config.js` and update with your API keys:
+2. Copy `config.template.js` to `config.js` and update with your own Perplexity and Alpha Vantage API keys:
 ```bash
 cp config.template.js config.js
 ```
