@@ -1,4 +1,4 @@
-# AI for Business Project Documentation
+# Georgia Tech's AI for Business - Project Documentation
 
 ## Project Overview
 The Stock Price Tracker is a web-based application that combines real-time stock data with AI-powered company search capabilities. It provides users with an intuitive interface to track stock prices and search for companies using natural language queries.
